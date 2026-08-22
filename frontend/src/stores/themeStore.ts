@@ -165,6 +165,11 @@ export const isCrtEnabled = writable<boolean>(false);
 export const isScanlinesEnabled = writable<boolean>(false);
 export const isGlowEnabled = writable<boolean>(true);
 
+export function toggleCrt() {
+  isCrtEnabled.update(v => !v);
+  isScanlinesEnabled.update(v => !v);
+}
+
 export function setTheme(name: ThemeName): boolean {
   if (THEMES[name]) {
     currentTheme.set(THEMES[name]);
