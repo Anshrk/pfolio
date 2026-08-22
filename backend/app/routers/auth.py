@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import AdminUser
 from app.schemas import Token, LoginRequest
 from app.auth import verify_password, create_access_token, get_current_admin
+from app.limiter import login_limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
-def login(login_data: LoginRequest, db: Session = Depends(get_db)):
+def login(request: Request, login_data: LoginRequest, db: Session = Depends(get_db)):
+    login_limiter.check(request, custom_key="login")
     user = db.query(AdminUser).filter(AdminUser.username == login_data.username).first()
     if not user or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
